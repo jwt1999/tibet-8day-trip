@@ -560,11 +560,31 @@ function initDayMap(day) {
   };
   dayState[day] = state;
 
+  var drivingDone = false;
+  var pluginLoaded = false;
+  var allBounds = [];
+
+  // Safety fallback: if Driving doesn't complete in time, draw dashed lines
+  var fallbackTimer = setTimeout(function() {
+    if (drivingDone) return;
+    var segs = segData[day];
+    if (!segs) return;
+    if (state.polylines.length === 0) {
+      segs.forEach(function(seg) {
+        addPolyline([seg.from, seg.to], seg, true);
+        allBounds.push(seg.from, seg.to);
+      });
+      addStationMarkers(day);
+      if (allBounds.length > 0) map.setFitView(null, false, [60, 40, 60, 40]);
+      drivingDone = true;
+    }
+  }, 6000);
+
   AMap.plugin('AMap.Driving', function() {
+    pluginLoaded = true;
     var segments = segData[day];
     if (!segments) return;
 
-    var allBounds = [];
     var searchIdx = 0;
 
     function addPolyline(path, seg, isFallback) {
@@ -597,6 +617,8 @@ function initDayMap(day) {
 
     function searchNext() {
       if (searchIdx >= segments.length) {
+        drivingDone = true;
+        clearTimeout(fallbackTimer);
         addStationMarkers(day);
         if (allBounds.length > 0) {
           map.setFitView(null, false, [60, 40, 60, 40]);
