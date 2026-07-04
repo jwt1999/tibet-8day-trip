@@ -449,8 +449,22 @@ window._AMapSecurityConfig = {
     securityJsCode: "8737710beeb685bfe4d9d5da59385e8f"
 };
 </script>
-<script type="text/javascript" src="https://webapi.amap.com/maps?v=2.0&key=384e0989f393f99e9a26bdb93e6e9546&plugin=AMap.Driving"></script>
+<script type="text/javascript" src="https://webapi.amap.com/maps?v=2.0&key=384e0989f393f99e9a26bdb93e6e9546&plugin=AMap.Driving" onerror="window.__AMAP_ERROR=true;console.warn('AMap SDK load failed');"></script>
 <script>
+window.onerror = function(msg, src, line, col, err) {
+    if (src && (src.indexOf('webapi.amap.com') >= 0 || src.indexOf('amap') >= 0)) {
+        console.warn('AMap error suppressed:', msg);
+        return true; // prevent default (no refresh)
+    }
+    return false;
+};
+
+window.onunhandledrejection = function(e) {
+    if (e.reason && e.reason.message && e.reason.message.indexOf('amap') >= 0) {
+        e.preventDefault();
+        return;
+    }
+};
 
 // ---- SEGMENT DATA (organized by day) ----
 var segData = {
