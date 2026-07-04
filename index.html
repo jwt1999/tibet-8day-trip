@@ -452,13 +452,13 @@
 </div>
 
 <script type="text/javascript">
-var __isWeChat = /MicroMessenger/i.test(navigator.userAgent);
-
-window._AMapSecurityConfig = {
-    securityJsCode: "8737710beeb685bfe4d9d5da59385e8f"
-};
-
-if (!__isWeChat) {
+if (/MicroMessenger/i.test(navigator.userAgent)) {
+    window.__isWeChat = true;
+} else {
+    window.__isWeChat = false;
+    window._AMapSecurityConfig = {
+        securityJsCode: "8737710beeb685bfe4d9d5da59385e8f"
+    };
     document.write('\x3Cscript type="text/javascript" src="https://webapi.amap.com/maps?v=2.0&key=384e0989f393f99e9a26bdb93e6e9546&plugin=AMap.Driving">\x3C\/script>');
 }
 </script>
@@ -866,8 +866,11 @@ function resetHighlight(day) {
 // ---- Initialize all maps ----
 document.addEventListener('DOMContentLoaded', function() {
   if (__isWeChat) {
-    // WeChat: modal is shown by default, draw canvas fallback behind it
-    for (var d = 1; d <= 7; d++) { initDayCanvas(d); }
+    try {
+      var d = 1;
+      function drawNext() { if (d <= 7) { initDayCanvas(d); d++; setTimeout(drawNext, 30); } }
+      drawNext();
+    } catch(e) {}
   } else if (typeof AMap !== 'undefined') {
     // Normal browser: AMap loaded — use real maps with driving routes
     var modal = document.getElementById('wechat-modal');
