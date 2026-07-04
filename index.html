@@ -560,31 +560,11 @@ function initDayMap(day) {
   };
   dayState[day] = state;
 
-  var drivingDone = false;
-  var pluginLoaded = false;
-  var allBounds = [];
-
-  // Safety fallback: if Driving doesn't complete in time, draw dashed lines
-  var fallbackTimer = setTimeout(function() {
-    if (drivingDone) return;
-    var segs = segData[day];
-    if (!segs) return;
-    if (state.polylines.length === 0) {
-      segs.forEach(function(seg) {
-        addPolyline([seg.from, seg.to], seg, true);
-        allBounds.push(seg.from, seg.to);
-      });
-      addStationMarkers(day);
-      if (allBounds.length > 0) map.setFitView(null, false, [60, 40, 60, 40]);
-      drivingDone = true;
-    }
-  }, 6000);
-
   AMap.plugin('AMap.Driving', function() {
-    pluginLoaded = true;
     var segments = segData[day];
     if (!segments) return;
 
+    var allBounds = [];
     var searchIdx = 0;
 
     function addPolyline(path, seg, isFallback) {
@@ -617,8 +597,6 @@ function initDayMap(day) {
 
     function searchNext() {
       if (searchIdx >= segments.length) {
-        drivingDone = true;
-        clearTimeout(fallbackTimer);
         addStationMarkers(day);
         if (allBounds.length > 0) {
           map.setFitView(null, false, [60, 40, 60, 40]);
@@ -721,6 +699,104 @@ function addStationMarkers(day) {
   });
 }
 
+// ---- Canvas fallback when AMap SDK is not available (e.g. WeChat) ----
+function initDayCanvas(day) {
+  var container = document.getElementById('map-day' + day);
+  if (!container) return;
+
+  var segments = segData[day];
+  if (!segments) return;
+
+  var canvas = document.createElement('canvas');
+  var rect = container.getBoundingClientRect();
+  var W = rect.width  || container.offsetWidth  || container.parentNode.offsetWidth  || 600;
+  var H = rect.height || container.offsetHeight || 400;
+  canvas.width = W;
+  canvas.height = H;
+  canvas.style.width = '100%';
+  canvas.style.height = '100%';
+  container.appendChild(canvas);
+  var ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#f7f3ed';
+  ctx.fillRect(0, 0, W, H);
+
+  var allPts = [];
+  segments.forEach(function(seg) {
+    allPts.push(seg.from, seg.to);
+  });
+
+  var minLng = Infinity, maxLng = -Infinity;
+  var minLat = Infinity, maxLat = -Infinity;
+  allPts.forEach(function(pt) {
+    if (pt[0] < minLng) minLng = pt[0];
+    if (pt[0] > maxLng) maxLng = pt[0];
+    if (pt[1] < minLat) minLat = pt[1];
+    if (pt[1] > maxLat) maxLat = pt[1];
+  });
+
+  var lngRange = maxLng - minLng || 0.1;
+  var latRange = maxLat - minLat || 0.1;
+  var pad = 50;
+
+  function proj(lng, lat) {
+    var x = pad + (lng - minLng) / lngRange * (W - 2 * pad);
+    var y = pad + (1 - (lat - minLat) / latRange) * (H - 2 * pad);
+    return [x, y];
+  }
+
+  var seen = {};
+
+  segments.forEach(function(seg) {
+    var c = segColorMap[seg.id] || segColors[0];
+    var from = proj(seg.from[0], seg.from[1]);
+    var to = proj(seg.to[0], seg.to[1]);
+
+    ctx.beginPath();
+    ctx.setLineDash([6, 4]);
+    ctx.moveTo(from[0], from[1]);
+    ctx.lineTo(to[0], to[1]);
+    ctx.strokeStyle = c.stroke;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    var mx = (from[0] + to[0]) / 2;
+    var my = (from[1] + to[1]) / 2;
+    ctx.fillStyle = '#666';
+    ctx.font = '10px -apple-system, "Noto Sans SC", sans-serif';
+    ctx.fillText(seg.km + 'km', mx + 4, my - 2);
+
+    var parts = seg.title.split(' \u2192 ');
+    var stations = [
+      {pos: seg.from, name: parts[0], color: c.fill},
+      {pos: seg.to, name: parts[1] || parts[0], color: c.fill}
+    ];
+
+    stations.forEach(function(st) {
+      if (!st.name) return;
+      var key = st.pos[0].toFixed(4) + ',' + st.pos[1].toFixed(4);
+      if (seen[key]) return;
+      seen[key] = true;
+
+      var p = proj(st.pos[0], st.pos[1]);
+      ctx.beginPath();
+      ctx.arc(p[0], p[1], 6, 0, 2 * Math.PI);
+      ctx.fillStyle = st.color;
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.fillStyle = '#2c2c2c';
+      ctx.font = 'bold 11px -apple-system, "Noto Sans SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(st.name, p[0], p[1] - 14);
+      ctx.textAlign = 'start';
+    });
+  });
+}
+
 // ---- Highlight a segment on click ----
 function highlightSegment(day, segId, event) {
   var state = dayState[day];
@@ -794,26 +870,22 @@ function resetHighlight(day) {
 
 // ---- Initialize all maps ----
 document.addEventListener('DOMContentLoaded', function() {
-  if (typeof AMap === 'undefined') {
-    console.warn('AMap SDK not loaded, skipping maps');
-    return;
-  }
-
-  // Day 8 has no map content
-  for (var d = 1; d <= 7; d++) {
-    initDayMap(d);
-  }
-
-  // Close info window on map click (if not on a polyline)
-  for (var d = 1; d <= 7; d++) {
-    (function(day) {
-      var map = dayMaps[day];
-      if (!map) return;
-      map.on('click', function(e) {
-        if (e.target && e.target._segId) return; // clicked on polyline
-        resetHighlight(day);
-      });
-    })(d);
+  if (typeof AMap !== 'undefined') {
+    // AMap loaded — use real maps with driving routes
+    for (var d = 1; d <= 7; d++) { initDayMap(d); }
+    for (var d = 1; d <= 7; d++) {
+      (function(day) {
+        var map = dayMaps[day];
+        if (!map) return;
+        map.on('click', function(e) {
+          if (e.target && e.target._segId) return;
+          resetHighlight(day);
+        });
+      })(d);
+    }
+  } else {
+    // AMap SDK not loaded — canvas fallback for WeChat
+    for (var d = 1; d <= 7; d++) { initDayCanvas(d); }
   }
 });
 
