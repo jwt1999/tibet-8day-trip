@@ -88,18 +88,59 @@
     .amap-info-content {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif;
     }
-    #wechat-tip {
+    #wechat-modal {
         display: none;
-        background: #fff3cd;
-        border: 1px solid #ffc107;
-        color: #856404;
-        padding: 12px 16px;
-        border-radius: 8px;
-        font-size: 0.92em;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.6);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+    #wechat-modal .box {
+        background: #fff;
+        border-radius: 14px;
+        padding: 28px 24px 20px;
+        margin: 0 24px;
+        max-width: 340px;
+        width: 100%;
         text-align: center;
-        margin-bottom: 16px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+        animation: fadeInUp 0.3s ease;
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    #wechat-modal .box .icon {
+        font-size: 44px;
+        margin-bottom: 12px;
+    }
+    #wechat-modal .box h3 {
+        margin: 0 0 10px;
+        font-size: 1.1em;
+        color: #2c2c2c;
+    }
+    #wechat-modal .box p {
+        margin: 0 0 18px;
+        font-size: 0.88em;
+        color: #666;
         line-height: 1.6;
     }
+    #wechat-modal .box button {
+        background: #E63946;
+        color: #fff;
+        border: none;
+        border-radius: 20px;
+        padding: 10px 32px;
+        font-size: 0.95em;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    #wechat-modal .box button:active {
+        background: #c0392b;
+    }
+    #wechat-modal:target { display: none; }
 </style>
 </head>
 <body>
@@ -111,7 +152,14 @@
   <div class="dates">2025年8月8日 &#8212; 8月15日</div>
 </div>
 
-<div id="wechat-tip">请注意：微信内置浏览器不支持高德地图组件。<br>请点击右上角 <strong>「&#8942;」</strong> 选择 <strong>「在浏览器中打开」</strong> 即可查看完整地图与路线。</div>
+<div id="wechat-modal">
+  <div class="box">
+    <div class="icon">&#x1f517;</div>
+    <h3>请用浏览器打开</h3>
+    <p>微信内置浏览器不支持高德地图组件。<br>请点击右上角 <strong>&#x25E6;&#x25E6;&#x25E6;</strong> 选择<br><strong>「在浏览器中打开」</strong></p>
+    <button onclick="document.getElementById('wechat-modal').style.display='none'">我知道了</button>
+  </div>
+</div>
 
 <div class="section">
   <h2>路线概览 <span style="font-size:0.65em;color:var(--muted);font-weight:400;">林芝进 &rarr; 拉萨出</span></h2>
@@ -755,7 +803,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (typeof AMap === 'undefined') {
     console.warn('AMap SDK not loaded, skipping maps');
     if (__isWeChat) {
-      document.getElementById('wechat-tip').style.display = 'block';
+      document.getElementById('wechat-modal').style.display = 'flex';
     }
     return;
   }
