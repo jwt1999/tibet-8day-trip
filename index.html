@@ -88,6 +88,32 @@
     .amap-info-content {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif;
     }
+    #wechat-modal {
+        display: flex;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.55);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+    #wechat-modal .box {
+        background: #fff;
+        border-radius: 14px;
+        padding: 28px 24px 20px;
+        margin: 0 24px;
+        max-width: 340px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    }
+    #wechat-modal .box .icon { font-size: 44px; margin-bottom: 10px; }
+    #wechat-modal .box h3 { margin: 0 0 8px; font-size: 1.05em; color: #2c2c2c; }
+    #wechat-modal .box p { margin: 0 0 16px; font-size: 0.85em; color: #666; line-height: 1.6; }
+    #wechat-modal .box button {
+        background: #E63946; color: #fff; border: none; border-radius: 20px;
+        padding: 10px 32px; font-size: 0.9em; font-weight: 600; cursor: pointer;
+    }
 </style>
 </head>
 <body>
@@ -415,56 +441,28 @@
 </div>
 
 </div>
+
+<div id="wechat-modal">
+  <div class="box">
+    <div class="icon">&#x1f517;</div>
+    <h3>请用浏览器打开</h3>
+    <p>微信内置浏览器不支持高德地图。<br>点击右上角 <strong>&#x25E6;&#x25E6;&#x25E6;</strong> 选择<br><strong>「在浏览器中打开」</strong></p>
+    <button onclick="document.getElementById('wechat-modal').style.display='none'">我知道了</button>
+  </div>
+</div>
+
 <script type="text/javascript">
-var _origLocSet = Object.getOwnPropertyDescriptor(Location.prototype, 'href').set;
-var _origRep = window.location.replace.bind(window.location);
-var _origAssign = window.location.assign.bind(window.location);
-var _blockUntil = Date.now() + 8000;
-
-function _isBlocked(url) {
-    if (Date.now() > _blockUntil) return false;
-    if (url && (url.indexOf('webapi.amap.com/error') >= 0 || url.indexOf('amap.com/auth') >= 0 || url.indexOf('amap.com/error') >= 0)) return true;
-    return false;
-}
-
-Object.defineProperty(window.location, 'href', {
-    get: function() { return Object.getOwnPropertyDescriptor(Location.prototype, 'href').get.call(this); },
-    set: function(val) {
-        if (_isBlocked(val)) { console.warn('Blocked AMap redirect:', val); return; }
-        _origLocSet.call(window.location, val);
-    }
-});
-
-window.location.replace = function(url) {
-    if (_isBlocked(url)) { console.warn('Blocked AMap replace:', url); return; }
-    _origRep(url);
-};
-
-window.location.assign = function(url) {
-    if (_isBlocked(url)) { console.warn('Blocked AMap assign:', url); return; }
-    _origAssign(url);
-};
+var __isWeChat = /MicroMessenger/i.test(navigator.userAgent);
 
 window._AMapSecurityConfig = {
     securityJsCode: "8737710beeb685bfe4d9d5da59385e8f"
 };
-</script>
-<script type="text/javascript" src="https://webapi.amap.com/maps?v=2.0&key=384e0989f393f99e9a26bdb93e6e9546&plugin=AMap.Driving" onerror="window.__AMAP_ERROR=true;console.warn('AMap SDK load failed');"></script>
-<script>
-window.onerror = function(msg, src, line, col, err) {
-    if (src && (src.indexOf('webapi.amap.com') >= 0 || src.indexOf('amap') >= 0)) {
-        console.warn('AMap error suppressed:', msg);
-        return true; // prevent default (no refresh)
-    }
-    return false;
-};
 
-window.onunhandledrejection = function(e) {
-    if (e.reason && e.reason.message && e.reason.message.indexOf('amap') >= 0) {
-        e.preventDefault();
-        return;
-    }
-};
+if (!__isWeChat) {
+    document.write('\x3Cscript type="text/javascript" src="https://webapi.amap.com/maps?v=2.0&key=384e0989f393f99e9a26bdb93e6e9546&plugin=AMap.Driving">\x3C\/script>');
+}
+</script>
+<script>
 
 // ---- SEGMENT DATA (organized by day) ----
 var segData = {
@@ -541,11 +539,11 @@ function initDayMap(day) {
   var mapDiv = document.getElementById(containerId);
   if (!mapDiv) { console.warn('No container for day ' + day); return; }
 
-  try { var map = new AMap.Map(containerId, {
+  var map = new AMap.Map(containerId, {
     zoom: 10,
     center: [90.5, 30.0],
     mapStyle: 'amap://styles/light',
-    resizeEnable: false,
+    resizeEnable: true,
     viewMode: '2D'
   });
   dayMaps[day] = map;
@@ -645,9 +643,6 @@ function initDayMap(day) {
 
     searchNext();
   });
-  } catch(e) {
-    console.warn('AMap init failed for day ' + day + ': ' + e.message);
-  }
 }
 
 // ---- Add station markers (circles + labels) for a day ----
@@ -870,8 +865,13 @@ function resetHighlight(day) {
 
 // ---- Initialize all maps ----
 document.addEventListener('DOMContentLoaded', function() {
-  if (typeof AMap !== 'undefined') {
-    // AMap loaded — use real maps with driving routes
+  if (__isWeChat) {
+    // WeChat: modal is shown by default, draw canvas fallback behind it
+    for (var d = 1; d <= 7; d++) { initDayCanvas(d); }
+  } else if (typeof AMap !== 'undefined') {
+    // Normal browser: AMap loaded — use real maps with driving routes
+    var modal = document.getElementById('wechat-modal');
+    if (modal) { modal.style.display = 'none'; }
     for (var d = 1; d <= 7; d++) { initDayMap(d); }
     for (var d = 1; d <= 7; d++) {
       (function(day) {
@@ -884,7 +884,9 @@ document.addEventListener('DOMContentLoaded', function() {
       })(d);
     }
   } else {
-    // AMap SDK not loaded — canvas fallback for WeChat
+    // Normal browser but AMap failed — canvas fallback, no modal
+    var modal = document.getElementById('wechat-modal');
+    if (modal) { modal.style.display = 'none'; }
     for (var d = 1; d <= 7; d++) { initDayCanvas(d); }
   }
 });
