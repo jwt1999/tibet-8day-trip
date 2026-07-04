@@ -88,6 +88,18 @@
     .amap-info-content {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif;
     }
+    #wechat-tip {
+        display: none;
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        color: #856404;
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 0.92em;
+        text-align: center;
+        margin-bottom: 16px;
+        line-height: 1.6;
+    }
 </style>
 </head>
 <body>
@@ -98,6 +110,8 @@
   <p>南迦巴瓦 &bull; 拉萨 &bull; 羊卓雍措 &bull; 珠峰大本营 &bull; 佩枯措 &bull; 纳木错</p>
   <div class="dates">2025年8月8日 &#8212; 8月15日</div>
 </div>
+
+<div id="wechat-tip">请注意：微信内置浏览器不支持高德地图组件。<br>请点击右上角 <strong>「&#8942;」</strong> 选择 <strong>「在浏览器中打开」</strong> 即可查看完整地图与路线。</div>
 
 <div class="section">
   <h2>路线概览 <span style="font-size:0.65em;color:var(--muted);font-weight:400;">林芝进 &rarr; 拉萨出</span></h2>
@@ -415,7 +429,21 @@
 </div>
 
 </div>
-<script type="text/javascript" src="https://webapi.amap.com/maps?v=2.0&key=384e0989f393f99e9a26bdb93e6e9546&jscode=8737710beeb685bfe4d9d5da59385e8f&plugin=AMap.Driving" onerror="window.__AMAP_LOAD_FAILED = true;"></script>
+<script type="text/javascript">
+var __isWeChat = /MicroMessenger/i.test(navigator.userAgent);
+window._AMapSecurityConfig = {
+    securityJsCode: "8737710beeb685bfe4d9d5da59385e8f"
+};
+if (__isWeChat) {
+    // WeChat browser: skip AMap SDK to avoid refresh loop
+    window.__SKIP_AMAP = true;
+}
+</script>
+<script type="text/javascript">
+if (!window.__SKIP_AMAP) {
+    document.write('<script type="text/javascript" src="https://webapi.amap.com/maps?v=2.0&key=384e0989f393f99e9a26bdb93e6e9546&plugin=AMap.Driving"><\/script>');
+}
+</script>
 <script>
 
 // ---- SEGMENT DATA (organized by day) ----
@@ -723,9 +751,12 @@ function resetHighlight(day) {
 }
 
 // ---- Initialize all maps ----
-window.addEventListener('load', function() {
+document.addEventListener('DOMContentLoaded', function() {
   if (typeof AMap === 'undefined') {
     console.warn('AMap SDK not loaded, skipping maps');
+    if (__isWeChat) {
+      document.getElementById('wechat-tip').style.display = 'block';
+    }
     return;
   }
 
