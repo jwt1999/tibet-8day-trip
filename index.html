@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>西藏8日行程 · 高德地图版</title>
+<script>window.__isWeChat=/MicroMessenger/i.test(navigator.userAgent);</script>
 <style>
 :root { --bg: #f5f1eb; --card: #ffffff; --accent: #8b1a1a; --text: #2c2c2c; --muted: #6b6b6b; --border: #e0d8cc; --tag: #f0e8d8; --high: #c0392b; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -234,16 +235,13 @@
   <p style="margin-top:6px;color:var(--muted);font-size:0.78em;text-align:center;">红色实线：每日最高海拔 &nbsp;&#124;&nbsp; 蓝色虚线：当日住宿海拔（米）&nbsp;&#124;&nbsp; 重点关注 Day4-5 的剧烈爬升 &amp; 回落</p>
 </div>
 
-<div class="maps-row">
-  <div class="map-card">
-    <h3>前半段：林芝 &rarr; 拉萨 &rarr; 日喀则 (Day1-3)</h3>
-    <iframe src="https://www.google.com/maps/embed?pb=!1m40!1m12!1m3!1d7062597!2d88!3d29.5!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m25!3e0!4m5!1s0x3758df39ef144537%3A0xd9ee6ccf75015e51!2z5p6X5bK85Y6f6Ieq5rK75Yy6!3m2!1d29.303662!2d94.335265!4m5!1s0x39bc3cc243e53f9b%3A0x1e0b84e591c37e0!2z57Gz6KW_55-z!3m2!1d27.9880556!2d86.9252778!4m5!1s0x3761013f6eefcd9b%3A0xb869a20f46edc48!2z5pel5Yqo5YuZ!3m2!1d29.2666667!2d88.8833333!4m5!1s0x3761f8c3a3de7ffd%3A0x1a2c9c0c7c8a5b0!2z5pel5Yqo5YuZ5ZCN5bqX5Lqk5Lq65p2_5Ymn5biC!3m2!1d29.653!2d91.105!5e0!3m2!1szh-CN!2scn" allowfullscreen="" loading="lazy"></iframe>
-  </div>
-  <div class="map-card">
-    <h3>后半段：珠峰 &rarr; 佩枯措 &rarr; 纳木错 (Day4-8)</h3>
-    <iframe src="https://www.google.com/maps/embed?pb=!1m40!1m12!1m3!1d7062597!2d88!3d29.5!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m25!3e0!4m5!1s0x39bc3c9c0c7c8a5b%3A0x1a2c9c0c7c8a5b0!2z5pel5Yqo5YuZ5ZCN5bqX5Lqk5Lq65p2_5Ymn5biC!3m2!1d29.653!2d91.105!4m5!1s0x39bc3cc243e53f9b%3A0x1e0b84e591c37e0!2z57Gz6KW_55-z!3m2!1d27.9880556!2d86.9252778!4m5!1s0x3761f8c3a3de7ffd%3A0x1a2c9c0c7c8a5b0!2z5pel5Yqo5YuZ5ZCN5bqX5Lqk5Lq65p2_5Ymn5biC!3m2!1d29.653!2d91.105!4m5!1s0x376483ef9edaae3b%3A0x12ffadc50e7e06e1!2z57qz5pyo6ZSZ!3m2!1d30.7166667!2d90.8666667!5e0!3m2!1szh-CN!2scn" allowfullscreen="" loading="lazy"></iframe>
-  </div>
-</div>
+<div class="maps-row" id="google-maps-row" style="display:none"></div>
+<script type="text/javascript">
+if (!window.__isWeChat) {
+  document.getElementById('google-maps-row').style.display = '';
+  document.getElementById('google-maps-row').innerHTML = '\x3Cdiv class="map-card"\x3E\x3Ch3\x3E前半段：林芝 \u2192 拉萨 \u2192 日喀则 (Day1-3)\x3C/h3\x3E\x3Ciframe src="https://www.google.com/maps/embed?pb=!1m40!1m12!1m3!1d7062597!2d88!3d29.5!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m25!3e0!4m5!1s0x3758df39ef144537%3A0xd9ee6ccf75015e51!2z5p6X5bK85Y6f6Ieq5rK75Yy6!3m2!1d29.303662!2d94.335265!4m5!1s0x39bc3cc243e53f9b%3A0x1e0b84e591c37e0!2z57Gz6KW_55-z!3m2!1d27.9880556!2d86.9252778!4m5!1s0x3761013f6eefcd9b%3A0xb869a20f46edc48!2z5pel5Yqo5YuZ!3m2!1d29.2666667!2d88.8833333!4m5!1s0x3761f8c3a3de7ffd%3A0x1a2c9c0c7c8a5b0!2z5pel5Yqo5YuZ5ZCN5bqX5Lqk5Lq65p2_5Ymn5biC!3m2!1d29.653!2d91.105!5e0!3m2!1szh-CN!2scn" allowfullscreen="" loading="lazy"\x3E\x3C/iframe\x3E\x3C/div\x3E\x3Cdiv class="map-card"\x3E\x3Ch3\x3E后半段：珠峰 \u2192 佩枯措 \u2192 纳木错 (Day4-8)\x3C/h3\x3E\x3Ciframe src="https://www.google.com/maps/embed?pb=!1m40!1m12!1m3!1d7062597!2d88!3d29.5!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m25!3e0!4m5!1s0x39bc3c9c0c7c8a5b%3A0x1a2c9c0c7c8a5b0!2z5pel5Yqo5YuZ5ZCN5bqX5Lqk5Lq65p2_5Ymn5biC!3m2!1d29.653!2d91.105!4m5!1s0x39bc3cc243e53f9b%3A0x1e0b84e591c37e0!2z57Gz6KW_55-z!3m2!1d27.9880556!2d86.9252778!4m5!1s0x3761f8c3a3de7ffd%3A0x1a2c9c0c7c8a5b0!2z5pel5Yqo5YuZ5ZCN5bqX5Lqk5Lq65p2_5Ymn5biC!3m2!1d29.653!2d91.105!4m5!1s0x376483ef9edaae3b%3A0x12ffadc50e7e06e1!2z57qz5pyo6ZSZ!3m2!1d30.7166667!2d90.8666667!5e0!3m2!1szh-CN!2scn" allowfullscreen="" loading="lazy"\x3E\x3C/iframe\x3E\x3C/div\x3E';
+}
+</script>
 
 <div class="day-card">
   <div class="day-header"><span class="day-num">Day 1</span><span class="day-date">8月8日（五）</span></div>
@@ -452,10 +450,7 @@
 </div>
 
 <script type="text/javascript">
-if (/MicroMessenger/i.test(navigator.userAgent)) {
-    window.__isWeChat = true;
-} else {
-    window.__isWeChat = false;
+if (!window.__isWeChat) {
     window._AMapSecurityConfig = {
         securityJsCode: "8737710beeb685bfe4d9d5da59385e8f"
     };
