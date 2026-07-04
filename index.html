@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>西藏8日行程 · 高德地图版</title>
+<style>
+:root { --bg: #f5f1eb; --card: #ffffff; --accent: #8b1a1a; --text: #2c2c2c; --muted: #6b6b6b; --border: #e0d8cc; --tag: #f0e8d8; --high: #c0392b; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+  .container { max-width: 960px; margin: 0 auto; padding: 20px; }
+  .hero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff; border-radius: 16px; padding: 50px 30px; text-align: center; margin-bottom: 28px; position: relative; overflow: hidden; }
+  .hero::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(ellipse at 30% 60%, rgba(255,255,255,0.08) 0%, transparent 60%), radial-gradient(ellipse at 70% 30%, rgba(255,255,255,0.05) 0%, transparent 50%); }
+  .hero h1 { font-size: 2.2em; font-weight: 900; letter-spacing: 0.04em; position: relative; z-index: 1; }
+  .hero p { font-size: 1em; margin-top: 10px; opacity: 0.85; position: relative; z-index: 1; }
+  .hero .dates { display: inline-block; background: rgba(255,255,255,0.15); padding: 6px 18px; border-radius: 20px; margin-top: 14px; font-size: 0.9em; position: relative; z-index: 1; }
+  .section { background: var(--card); border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .section h2 { font-size: 1.2em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .map-visual { display: flex; overflow-x: auto; gap: 0; padding: 10px 0; align-items: flex-start; font-size: 0.78em; }
+  .map-stop { text-align: center; min-width: 65px; flex-shrink: 0; }
+  .map-stop .dot { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: #fff; margin: 0 auto 5px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8em; }
+  .map-stop .dot.start { background: #2e7d32; } .map-stop .dot.end { background: #1565c0; }
+  .map-stop .day { font-weight: 700; color: var(--accent); } .map-stop .place { color: var(--muted); }
+  .map-arrow { display: flex; align-items: center; padding: 0 3px; color: var(--accent); font-size: 1.1em; font-weight: 700; flex-shrink: 0; margin-top: 5px; }
+  .day-card { background: var(--card); border-radius: 12px; padding: 22px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid var(--accent); }
+  .day-card.rest { border-left-color: #4caf50; }
+  .day-card .day-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 6px; }
+  .day-card .day-num { font-size: 1.1em; font-weight: 900; color: var(--accent); }
+  .day-card .day-date { color: var(--muted); font-size: 0.85em; }
+  .day-card h2 { font-size: 1.05em; margin-bottom: 10px; }
+  .day-table { width: 100%; border-collapse: collapse; font-size: 0.88em; }
+  .day-table td { padding: 5px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .day-table td:first-child { font-weight: 700; color: var(--muted); white-space: nowrap; width: 100px; }
+  .day-table tr:last-child td { border-bottom: none; }
+  .tag { display: inline-block; background: var(--tag); padding: 2px 7px; border-radius: 4px; font-size: 0.78em; font-weight: 600; margin: 1px; }
+  .tag.warn { background: #fff3cd; color: #856404; } .tag.info { background: #d1ecf1; color: #0c5460; }
+  .altitude { font-weight: 700; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 16px; }
+  .summary-item { background: var(--bg); border-radius: 8px; padding: 14px; text-align: center; }
+  .summary-item .num { font-size: 1.6em; font-weight: 900; color: var(--accent); }
+  .summary-item .label { color: var(--muted); font-size: 0.8em; margin-top: 3px; }
+  .cost-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  .cost-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); }
+  .cost-table td:last-child { text-align: right; font-weight: 700; }
+  .cost-table tr.total td { border-top: 2px solid var(--accent); border-bottom: none; font-size: 1.05em; color: var(--accent); }
+  .reminders ul { padding-left: 18px; } .reminders li { margin-bottom: 7px; font-size: 0.92em; }
+  .maps-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .maps-row { grid-template-columns: 1fr; } }
+  .map-card { background: var(--card); border-radius: 10px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+  .map-card h3 { font-size: 0.95em; margin-bottom: 10px; color: var(--accent); }
+  .map-card iframe { width: 100%; height: 280px; border: 0; border-radius: 8px; }
+  .footer { text-align: center; color: var(--muted); font-size: 0.82em; padding: 16px; }
+  .highlight { color: var(--accent); font-weight: 700; }
+  .chart-bar { fill: #8b1a1a; opacity: 0.85; }
+  .chart-label { font-size: 10px; fill: #6b6b6b; text-anchor: middle; }
+  .chart-alt { font-size: 9px; fill: #8b1a1a; text-anchor: middle; font-weight: 700; }
+  .chart-line { fill: none; stroke: #c0392b; stroke-width: 2; }
+  .chart-dot { fill: #c0392b; }
+  .chart-guide { stroke: #e0d8cc; stroke-width: 1; stroke-dasharray: 4 4; }
+  tbody tr:hover { background: #fdfaf5; }
+  .map-container { position: relative; width: 100%; height: 400px; border-radius: 8px; margin-top: 12px; z-index: 0; }@media print {
+    body { background: #fff; font-size: 10px; }
+    .day-card, .section { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+    .hero { background: var(--accent) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .container { max-width: 100%; padding: 0; }
+    .maps-row { display: block; } .map-card iframe { display: none; }
+  }
+    .map-container > div {
+        width: 100%;
+        height: 100%;
+    }
+    .map-container .amap-container {
+        border-radius: 8px;
+    }
+    .circle-marker {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 3px solid #8b1a1a;
+        background: #fff;
+        box-sizing: border-box;
+        pointer-events: none;
+    }
+    .circle-marker:hover {
+        border-color: #c0392b;
+        background: #fde8e8;
+    }
+    .amap-info-content {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="hero">
+  <h1>西藏8日精华行程</h1>
+  <p>南迦巴瓦 &bull; 拉萨 &bull; 羊卓雍措 &bull; 珠峰大本营 &bull; 佩枯措 &bull; 纳木错</p>
+  <div class="dates">2025年8月8日 &#8212; 8月15日</div>
+</div>
+
+<div class="section">
+  <h2>路线概览 <span style="font-size:0.65em;color:var(--muted);font-weight:400;">林芝进 &rarr; 拉萨出</span></h2>
+  <div class="map-visual">
+    <div class="map-stop"><div class="dot start">1</div><div class="day">Day1</div><div class="place">林芝机场</div></div><div class="map-arrow">&rarr;</div>
+    <div class="map-stop"><div class="dot start">1</div><div class="day">Day1</div><div class="place">新措</div></div><div class="map-arrow">&rarr;</div>
+    <div class="map-stop"><div class="dot start">1</div><div class="day">Day1</div><div class="place">索松村</div></div><div class="map-arrow">&rarr;</div>
+    <div class="map-stop"><div class="dot">2</div><div class="day">Day2</div><div class="place">拉萨</div></div><div class="map-arrow">&rarr;</div>
+    <div class="map-stop"><div class="dot">3</div><div class="day">Day3</div><div class="place">羊卓雍措</div></div><div class="map-arrow">&rarr;</div>
+    <div class="map-stop"><div class="dot">3</div><div class="day">Day3</div><div class="place">日喀则</div></div><div class="map-arrow">&rarr;</div>
+    <div class="map-stop"><div class="dot">4</div><div class="day">Day4</div><div class="place">珠峰大本营</div></div><div class="map-arrow">&rarr;</div>
+    <div class="map-stop"><div class="dot">5</div><div class="day">Day5</div><div class="place">佩枯措</div></div><div class="map-arrow">&rarr;</div>
+    <div class="map-stop"><div class="dot">5</div><div class="day">Day5</div><div class="place">日喀则</div></div><div class="map-arrow">&rarr;</div>
+    <div class="map-stop"><div class="dot">6</div><div class="day">Day6</div><div class="place">拉萨</div></div><div class="map-arrow">&rarr;</div>
+    <div class="map-stop"><div class="dot">7</div><div class="day">Day7</div><div class="place">纳木错</div></div><div class="map-arrow">&rarr;</div>
+    <div class="map-stop"><div class="dot end">8</div><div class="day">Day8</div><div class="place">贡嘎机场</div></div>
+  </div>
+  <p style="margin-top:12px;color:var(--muted);font-size:0.82em;text-align:center;">
+    总里程约 <span class="highlight">2,590km</span> &nbsp;|&nbsp; 总车程约 <span class="highlight">50h</span> &nbsp;|&nbsp; 最高海拔 <span class="highlight">5,200m</span>
+  </p>
+</div>
+
+<div class="section" id="altitude-section">
+  <h2>海拔变化图
+    <span style="font-weight:400;font-size:0.65em;margin-left:12px;">
+      <span style="display:inline-block;width:14px;height:3px;background:#E63946;vertical-align:middle;margin-right:4px;"></span> 每日最高
+      <span style="display:inline-block;width:14px;height:3px;background:#1D3557;vertical-align:middle;margin:0 4px 0 12px;"></span> 住宿海拔
+    </span>
+  </h2>
+  <svg viewBox="0 0 900 360" style="width:100%;height:auto;max-height:380px;" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="altFillMax" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#E63946" stop-opacity="0.18"/>
+        <stop offset="100%" stop-color="#E63946" stop-opacity="0.00"/>
+      </linearGradient>
+      <linearGradient id="altFillSleep" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#1D3557" stop-opacity="0.14"/>
+        <stop offset="100%" stop-color="#1D3557" stop-opacity="0.00"/>
+      </linearGradient>
+    </defs>
+
+    <!-- Y axis guides -->
+    <line x1="85" y1="30" x2="880" y2="30" stroke="#e0d8cc" stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="76" y="35" text-anchor="end" class="chart-label">5,500</text>
+    <line x1="85" y1="86" x2="880" y2="86" stroke="#e0d8cc" stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="76" y="91" text-anchor="end" class="chart-label">5,000</text>
+    <line x1="85" y1="143" x2="880" y2="143" stroke="#e0d8cc" stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="76" y="148" text-anchor="end" class="chart-label">4,500</text>
+    <line x1="85" y1="200" x2="880" y2="200" stroke="#e0d8cc" stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="76" y="205" text-anchor="end" class="chart-label">4,000</text>
+    <line x1="85" y1="256" x2="880" y2="256" stroke="#e0d8cc" stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="76" y="261" text-anchor="end" class="chart-label">3,500</text>
+    <line x1="85" y1="313" x2="880" y2="313" stroke="#e0d8cc" stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="76" y="318" text-anchor="end" class="chart-label">3,000</text>
+
+    <!-- Axes -->
+    <line x1="85" y1="20" x2="85" y2="330" stroke="#bbb" stroke-width="1"/>
+    <line x1="85" y1="330" x2="880" y2="330" stroke="#bbb" stroke-width="1"/>
+
+    <!-- Max altitude area fill -->
+    <polygon points="85,313 197,222 309,116 421,85 532,64 644,133 756,109 868,239 868,330 85,330" fill="url(#altFillMax)"/>
+    <!-- Sleep altitude area fill -->
+    <polygon points="85,313 197,256 309,239 421,222 532,166 644,222 756,239 868,239 868,330 85,330" fill="url(#altFillSleep)"/>
+
+    <!-- Max altitude line -->
+    <polyline points="85,313 197,222 309,116 421,85 532,64 644,133 756,109 868,239" fill="none" stroke="#E63946" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <!-- Sleep altitude line (dashed) -->
+    <polyline points="85,313 197,256 309,239 421,222 532,166 644,222 756,239 868,239" fill="none" stroke="#1D3557" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="6.5 3.5"/>
+
+    <!-- Dots + labels for max -->
+    <circle cx="85" cy="313" r="5.5" fill="#E63946"/><text x="85" y="302" class="chart-alt" fill="#E63946">3,000</text>
+    <circle cx="197" cy="222" r="5.5" fill="#E63946"/><text x="197" y="211" class="chart-alt" fill="#E63946">3,800</text>
+    <circle cx="309" cy="116" r="5.5" fill="#E63946"/><text x="309" y="105" class="chart-alt" fill="#E63946">4,740</text>
+    <circle cx="421" cy="85" r="5.5" fill="#E63946"/><text x="421" y="74" class="chart-alt" fill="#E63946">5,010</text>
+    <circle cx="532" cy="64" r="5.5" fill="#E63946"/><text x="532" y="53" class="chart-alt" fill="#E63946">5,200</text>
+    <circle cx="644" cy="133" r="5.5" fill="#E63946"/><text x="644" y="122" class="chart-alt" fill="#E63946">4,590</text>
+    <circle cx="756" cy="109" r="5.5" fill="#E63946"/><text x="756" y="98" class="chart-alt" fill="#E63946">4,800</text>
+    <circle cx="868" cy="239" r="5.5" fill="#E63946"/><text x="868" y="228" class="chart-alt" fill="#E63946">3,650</text>
+
+    <!-- Dots + labels for sleep -->
+    <circle cx="85" cy="313" r="5.5" fill="#1D3557"/><text x="85" y="329" class="chart-alt" fill="#1D3557">3,000</text>
+    <circle cx="197" cy="256" r="5.5" fill="#1D3557"/><text x="197" y="272" class="chart-alt" fill="#1D3557">3,500</text>
+    <circle cx="309" cy="239" r="5.5" fill="#1D3557"/><text x="309" y="255" class="chart-alt" fill="#1D3557">3,650</text>
+    <circle cx="421" cy="222" r="5.5" fill="#1D3557"/><text x="421" y="238" class="chart-alt" fill="#1D3557">3,800</text>
+    <circle cx="532" cy="166" r="5.5" fill="#1D3557"/><text x="532" y="155" class="chart-alt" fill="#1D3557">4,300</text>
+    <circle cx="644" cy="222" r="5.5" fill="#1D3557"/><text x="644" y="211" class="chart-alt" fill="#1D3557">3,800</text>
+    <circle cx="756" cy="239" r="5.5" fill="#1D3557"/><text x="756" y="255" class="chart-alt" fill="#1D3557">3,650</text>
+    <circle cx="868" cy="239" r="5.5" fill="#1D3557"/><text x="868" y="255" class="chart-alt" fill="#1D3557">3,650</text>
+
+    <!-- Day labels -->
+    <text x="85" y="352" class="chart-label" style="font-weight:700;font-size:12px;">Day1</text>
+    <text x="85" y="366" class="chart-label" style="font-size:8.5px;fill:#999;">索松村</text>
+    <text x="197" y="352" class="chart-label" style="font-weight:700;font-size:12px;">Day2</text>
+    <text x="197" y="366" class="chart-label" style="font-size:8.5px;fill:#999;">巴松措</text>
+    <text x="309" y="352" class="chart-label" style="font-weight:700;font-size:12px;">Day3</text>
+    <text x="309" y="366" class="chart-label" style="font-size:8.5px;fill:#999;">拉萨</text>
+    <text x="421" y="352" class="chart-label" style="font-weight:700;font-size:12px;">Day4</text>
+    <text x="421" y="366" class="chart-label" style="font-size:8.5px;fill:#999;">日喀则</text>
+    <text x="532" y="352" class="chart-label" style="font-weight:700;font-size:12px;">Day5</text>
+    <text x="532" y="366" class="chart-label" style="font-size:8.5px;fill:#999;">定日</text>
+    <text x="644" y="352" class="chart-label" style="font-weight:700;font-size:12px;">Day6</text>
+    <text x="644" y="366" class="chart-label" style="font-size:8.5px;fill:#999;">日喀则</text>
+    <text x="756" y="352" class="chart-label" style="font-weight:700;font-size:12px;">Day7</text>
+    <text x="756" y="366" class="chart-label" style="font-size:8.5px;fill:#999;">拉萨</text>
+    <text x="868" y="352" class="chart-label" style="font-weight:700;font-size:12px;">Day8</text>
+    <text x="868" y="366" class="chart-label" style="font-size:8.5px;fill:#999;">拉萨</text>
+  </svg>
+  <p style="margin-top:6px;color:var(--muted);font-size:0.78em;text-align:center;">红色实线：每日最高海拔 &nbsp;&#124;&nbsp; 蓝色虚线：当日住宿海拔（米）&nbsp;&#124;&nbsp; 重点关注 Day4-5 的剧烈爬升 &amp; 回落</p>
+</div>
+
+<div class="maps-row">
+  <div class="map-card">
+    <h3>前半段：林芝 &rarr; 拉萨 &rarr; 日喀则 (Day1-3)</h3>
+    <iframe src="https://www.google.com/maps/embed?pb=!1m40!1m12!1m3!1d7062597!2d88!3d29.5!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m25!3e0!4m5!1s0x3758df39ef144537%3A0xd9ee6ccf75015e51!2z5p6X5bK85Y6f6Ieq5rK75Yy6!3m2!1d29.303662!2d94.335265!4m5!1s0x39bc3cc243e53f9b%3A0x1e0b84e591c37e0!2z57Gz6KW_55-z!3m2!1d27.9880556!2d86.9252778!4m5!1s0x3761013f6eefcd9b%3A0xb869a20f46edc48!2z5pel5Yqo5YuZ!3m2!1d29.2666667!2d88.8833333!4m5!1s0x3761f8c3a3de7ffd%3A0x1a2c9c0c7c8a5b0!2z5pel5Yqo5YuZ5ZCN5bqX5Lqk5Lq65p2_5Ymn5biC!3m2!1d29.653!2d91.105!5e0!3m2!1szh-CN!2scn" allowfullscreen="" loading="lazy"></iframe>
+  </div>
+  <div class="map-card">
+    <h3>后半段：珠峰 &rarr; 佩枯措 &rarr; 纳木错 (Day4-8)</h3>
+    <iframe src="https://www.google.com/maps/embed?pb=!1m40!1m12!1m3!1d7062597!2d88!3d29.5!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m25!3e0!4m5!1s0x39bc3c9c0c7c8a5b%3A0x1a2c9c0c7c8a5b0!2z5pel5Yqo5YuZ5ZCN5bqX5Lqk5Lq65p2_5Ymn5biC!3m2!1d29.653!2d91.105!4m5!1s0x39bc3cc243e53f9b%3A0x1e0b84e591c37e0!2z57Gz6KW_55-z!3m2!1d27.9880556!2d86.9252778!4m5!1s0x3761f8c3a3de7ffd%3A0x1a2c9c0c7c8a5b0!2z5pel5Yqo5YuZ5ZCN5bqX5Lqk5Lq65p2_5Ymn5biC!3m2!1d29.653!2d91.105!4m5!1s0x376483ef9edaae3b%3A0x12ffadc50e7e06e1!2z57qz5pyo6ZSZ!3m2!1d30.7166667!2d90.8666667!5e0!3m2!1szh-CN!2scn" allowfullscreen="" loading="lazy"></iframe>
+  </div>
+</div>
+
+<div class="day-card">
+  <div class="day-header"><span class="day-num">Day 1</span><span class="day-date">8月8日（五）</span></div>
+  <h2>林芝机场 &rarr; 索松村 <span class="tag info">南迦巴瓦</span> <span class="tag info">日照金山</span></h2>
+  <table class="day-table">
+    <tr><td>日出/日落</td><td>日出 约 7:00 / 日落 约 20:35</td></tr>
+    <tr><td>航班</td><td>落地约 10:30-11:00，建议预订上午早班航班</td></tr>
+    <tr><td>出发</td><td>取行李/包车后约 12:00 出发</td></tr>
+    <tr><td>行驶距离</td><td>约 <span class="highlight">63km</span>（1.2h，G318 / 派镇方向）</td></tr>
+    <tr><td>到达</td><td>约 13:15 到达索松村</td></tr>
+    <tr><td>游玩</td><td>下午在村内观景台守 <span class="highlight">南迦巴瓦日落金山</span>（20:30 左右）</td></tr>
+    <tr><td>门票</td><td>雅鲁藏布大峡谷 <span class="highlight">¥240/人</span>（¥150 + 观光车 ¥90）</td></tr>
+    <tr><td>住宿</td><td>索松村藏式民宿（吉美民宿/南迦巴瓦客栈等）</td></tr>
+    <tr><td>海拔</td><td>索松村约 <span class="altitude">3,000m</span></td></tr>
+    <tr><td>今日数据</td><td><span class="highlight">63km</span>，约 1.2h 车程</td></tr>
+    <tr><td>备注</td><td><span class="tag warn">8月雨季，南迦巴瓦大概率被云遮挡，看到算赚到，放平心态</span></td></tr>
+  </table>
+<div class="map-container" id="map-day1"></div>
+</div>
+
+<div class="day-card">
+  <div class="day-header"><span class="day-num">Day 2</span><span class="day-date">8月9日（六）</span></div>
+  <h2>索松村 &rarr; 新措 &rarr; 巴松措 <span class="tag info">新措秘境</span> <span class="tag info">巴松措</span></h2>
+  <table class="day-table">
+    <tr><td>日出/日落</td><td>日出 约 7:10 / 日落 约 20:45</td></tr>
+    <tr><td>出发</td><td>早上看日出后约 8:30 出发</td></tr>
+    <tr><td>距离1</td><td>索松村 &rarr; 新措（巴松措景区北侧）约 <span class="highlight">211km</span>（3.6h，G318 + 景区道路）</td></tr>
+    <tr><td>景区1</td><td>新措（巴松措北侧秘境湖泊），游玩 2-3h，无门票或含在巴松措门票内</td></tr>
+    <tr><td>距离2</td><td>新措 &rarr; 巴松措 约 <span class="highlight">13km</span>（0.8h）</td></tr>
+    <tr><td>到达</td><td>约 16:00 到达巴松措，傍晚湖边漫步</td></tr>
+    <tr><td>住宿</td><td>巴松措附近民宿/客栈</td></tr>
+    <tr><td>海拔</td><td>巴松措约 <span class="altitude">3,500m</span></td></tr>
+    <tr><td>今日数据</td><td><span class="highlight">224km</span>（211+13），约 4.4h 车程</td></tr>
+  </table>
+<div class="map-container" id="map-day2"></div>
+</div>
+
+<div class="day-card">
+  <div class="day-header"><span class="day-num">Day 3</span><span class="day-date">8月10日（日）</span></div>
+  <h2>巴松措 &rarr; 拉萨 <span class="tag info">布达拉宫</span> <span class="tag info">八廓街</span></h2>
+  <table class="day-table">
+    <tr><td>日出/日落</td><td>日出 约 7:20 / 日落 约 20:50</td></tr>
+    <tr><td>上午</td><td>巴松措晨游/日出，早餐后约 9:00 出发</td></tr>
+    <tr><td>行驶距离</td><td>约 <span class="highlight">358km</span></td></tr>
+    <tr><td>行驶时间</td><td>约 4.2h（林拉高速为主，双向四车道，限速 100km/h）</td></tr>
+    <tr><td>到达时间</td><td>约 13:12 到达拉萨</td></tr>
+    <tr><td>景区</td><td>布达拉宫广场（外观）+ 八廓街 + 大昭寺</td></tr>
+    <tr><td>门票</td><td>布宫 <span class="highlight">¥200</span>（需提前7天预约, 秒光）+ 大昭寺 <span class="highlight">¥85</span></td></tr>
+    <tr><td>游玩时间</td><td>14:00-18:30（约 4.5h），布宫广场 0.5h，八廓街 1h，大昭寺 1.5h</td></tr>
+    <tr><td>住宿</td><td>拉萨市区酒店（大昭寺/八廓街附近）</td></tr>
+    <tr><td>海拔</td><td>拉萨 <span class="altitude">3,650m</span></td></tr>
+    <tr><td>今日数据</td><td><span class="highlight">358km</span>，约 4.2h 车程</td></tr>
+    <tr><td>晚餐</td><td>光明港琼甜茶馆 + 藏餐</td></tr>
+  </table>
+<div class="map-container" id="map-day3"></div>
+</div>
+
+<div class="day-card">
+  <div class="day-header"><span class="day-num">Day 4</span><span class="day-date">8月11日（一）</span></div>
+  <h2>拉萨 &rarr; 羊卓雍措 &rarr; 普莫雍措 &rarr; 日喀则 <span class="tag info">羊湖</span> <span class="tag info">普莫雍措</span></h2>
+  <table class="day-table">
+    <tr><td>日出/日落</td><td>日出 约 7:20 / 日落 约 20:50</td></tr>
+    <tr><td>出发时间</td><td>早上 7:30</td></tr>
+    <tr><td>距离1</td><td>拉萨 &rarr; 羊卓雍措（岗巴拉山口）约 <span class="highlight">150km</span>（2.5h），约 10:00 到达</td></tr>
+    <tr><td>景区1</td><td>羊卓雍措，门票 <span class="highlight">¥60/人</span>，游玩 1.5h</td></tr>
+    <tr><td>距离2</td><td>羊湖 &rarr; 普莫雍措 约 <span class="highlight">71km</span>（1.1h），约 13:00 到达</td></tr>
+    <tr><td>景区2</td><td>普莫雍措（海拔5,010m高山湖泊），游玩 1h，一般免票</td></tr>
+    <tr><td>午餐</td><td>浪卡子县途中川菜馆，约 14:30</td></tr>
+    <tr><td>距离3</td><td>普莫雍措 &rarr; 日喀则 约 <span class="highlight">243km</span>（3.9h），约 18:00 到达</td></tr>
+    <tr><td>住宿</td><td>日喀则市区酒店</td></tr>
+    <tr><td>海拔</td><td>日喀则 <span class="altitude">3,800m</span>（普莫雍措最高 <span class="altitude" style="color:var(--high);">5,010m</span>）</td></tr>
+    <tr><td>今日数据</td><td><span class="highlight">464km</span>（150+71+243），约 7.4h 车程</td></tr>
+    <tr><td>备注</td><td><span class="tag warn">边防证：日喀则地区（定日县、吉隆县等），Day4-6 均需</span></td></tr>
+  </table>
+<div class="map-container" id="map-day4"></div>
+</div>
+
+<div class="day-card">
+  <div class="day-header"><span class="day-num">Day 5</span><span class="day-date">8月12日（二）</span></div>
+  <h2>日喀则 &rarr; 珠峰大本营 &rarr; 定日 <span class="tag warn">最高海拔 5,200m</span> <span class="tag info">加乌拉山口</span></h2>
+  <table class="day-table">
+    <tr><td>日出/日落</td><td>日出 约 7:30 / 日落 约 21:05</td></tr>
+    <tr><td>出发时间</td><td>早上 <span class="highlight">7:00</span>（车程长，务必早走）</td></tr>
+    <tr><td>距离1</td><td>日喀则 &rarr; 珠峰大本营景区大门 约 <span class="highlight">366km</span>（6.3h，G318 经拉孜、定日）</td></tr>
+    <tr><td>到达大门</td><td>约 13:20 + 边防检查 0.5h</td></tr>
+    <tr><td>门票</td><td>珠峰大本营 <span class="highlight">¥180/人</span> + 观光车 <span class="highlight">¥120/人</span></td></tr>
+    <tr><td>到大本营</td><td>约 15:00（景区门口换乘观光车约 1h）</td></tr>
+    <tr><td>景区</td><td>加乌拉山口（5座8000米雪山）+ 珠峰大本营拍照、等日落金山（约 21:05）</td></tr>
+    <tr><td>距离2</td><td>珠峰大本营（景区门口）&rarr; 定日县 约 <span class="highlight">102km</span>（2.1h）</td></tr>
+    <tr><td>住宿</td><td>定日县酒店（条件好于帐篷，海拔更低更安全）</td></tr>
+    <tr><td>海拔</td><td>大本营 <span class="altitude" style="color:var(--high);">5,200m</span>（夜温 0-5&deg;C）&rarr; 定日 <span class="altitude">4,300m</span></td></tr>
+    <tr><td>今日数据</td><td><span class="highlight">468km</span>（366+102），约 8.4h 车程</td></tr>
+    <tr><td>备注</td><td><span class="tag warn">羽绒服 + 氧气瓶必备！看完日落立即下山，夜间不要在5,200m久留</span></td></tr>
+  </table>
+<div class="map-container" id="map-day5"></div>
+</div>
+
+<div class="day-card">
+  <div class="day-header"><span class="day-num">Day 6</span><span class="day-date">8月13日（三）</span></div>
+  <h2>定日 &rarr; 佩枯措 &rarr; 日喀则 <span class="tag warn">775km/12h 超长日</span></h2>
+  <table class="day-table">
+    <tr><td>日出/日落</td><td>日出 约 7:10 / 日落 约 20:45</td></tr>
+    <tr><td>出发</td><td>早上 7:30</td></tr>
+    <tr><td>距离1</td><td>定日 &rarr; 佩枯措 约 <span class="highlight">253km</span>（4.4h，G219 经岗嘎/老定日），约 12:00 到达</td></tr>
+    <tr><td>景区1</td><td>佩枯措 + 希夏邦马峰远眺，门票 <span class="highlight">¥40/人</span>，游玩 1.5h</td></tr>
+    <tr><td>午餐</td><td>途中乡镇简单解决，约 13:30</td></tr>
+    <tr><td>距离2</td><td>佩枯措 &rarr; 日喀则 约 <span class="highlight">522km</span>（7.6h，经萨嘎&rarr;拉孜&rarr;日喀则），约 21:30 到达</td></tr>
+    <tr><td>住宿</td><td>日喀则市区酒店</td></tr>
+    <tr><td>海拔</td><td>日喀则 <span class="altitude">3,800m</span></td></tr>
+    <tr><td>今日数据</td><td><span class="highlight">775km</span>（253+522），约 12h 车程 <span class="tag warn">备足干粮和水！</span></td></tr>
+  </table>
+<div class="map-container" id="map-day6"></div>
+</div>
+
+<div class="day-card">
+  <div class="day-header"><span class="day-num">Day 7</span><span class="day-date">8月14日（四）</span></div>
+  <h2>日喀则 &rarr; 纳木错 &rarr; 圣象天门 &rarr; 拉萨 <span class="tag warn">790km/13h 超长日</span></h2>
+  <table class="day-table">
+    <tr><td>日出/日落</td><td>日出 约 7:15 / 日落 约 20:50</td></tr>
+    <tr><td>出发</td><td>早上 <span class="highlight">7:00</span>（超长日，必须早走）</td></tr>
+    <tr><td>距离1</td><td>日喀则 &rarr; 纳木错 约 <span class="highlight">372km</span>（5.3h，经南木林/尼木翻山），约 12:20 到达</td></tr>
+    <tr><td>景区1</td><td>纳木错（扎西半岛），门票 <span class="highlight">¥120/人</span>，游玩 2h</td></tr>
+    <tr><td>距离2</td><td>纳木错 &rarr; 圣象天门 约 <span class="highlight">100km</span>（2.4h，环湖土路），约 16:40 到达</td></tr>
+    <tr><td>景区2</td><td>圣象天门（纳木错北岸天然石象），游玩 1h（需提前预约）</td></tr>
+    <tr><td>距离3</td><td>圣象天门 &rarr; 拉萨 约 <span class="highlight">318km</span>（5.3h，经当雄上G109），约 23:00 到达</td></tr>
+    <tr><td>住宿</td><td>拉萨市区酒店</td></tr>
+    <tr><td>海拔</td><td>纳木错湖面 <span class="altitude">4,718m</span>，圣象天门约 <span class="altitude">4,800m</span> &rarr; 拉萨 <span class="altitude">3,650m</span></td></tr>
+    <tr><td>今日数据</td><td><span class="highlight">790km</span>（372+100+318），约 13h 车程 <span class="tag warn">最长一日！</span></td></tr>
+    <tr><td>备注</td><td><span class="tag warn">夜车危险，建议评估体力。可考虑纳木错住一晚次日返程</span></td></tr>
+  </table>
+<div class="map-container" id="map-day7"></div>
+</div>
+
+<div class="day-card rest">
+  <div class="day-header"><span class="day-num">Day 8</span><span class="day-date">8月15日（五）</span></div>
+  <h2>拉萨市区 &rarr; 离境 <span class="tag info">休整日</span></h2>
+  <table class="day-table">
+    <tr><td>日出/日落</td><td>日出 约 7:15 / 日落 约 20:50</td></tr>
+    <tr><td>今日</td><td>无驾车，拉萨市区自由活动</td></tr>
+    <tr><td>景点</td><td>布达拉宫（若已预约到）/ 大昭寺 / 八廓街购物 / 西藏博物馆</td></tr>
+    <tr><td>门票</td><td>布宫 ¥200（极难约）/ 大昭寺 ¥85</td></tr>
+    <tr><td>午餐</td><td>藏餐/尼泊尔餐（娜玛瑟德餐厅）</td></tr>
+    <tr><td>航班</td><td><span class="tag warn">建议预订 16:00 以后的航班</span>，贡嘎机场距市区约 1h 高速</td></tr>
+    <tr><td>住宿</td><td>如晚班机，可寄存行李后游玩；如需续住一晚，拉萨市区酒店</td></tr>
+  </table>
+<div class="map-container" id="map-day8"></div>
+</div>
+
+<div class="section">
+  <h2>门票费用</h2>
+  <table class="cost-table">
+    <tr><td>雅鲁藏布大峡谷</td><td>¥150 + 观光车 ¥90</td><td>¥240</td></tr>
+    <tr><td>巴松措</td><td>&mdash;</td><td>¥120</td></tr>
+    <tr><td>大昭寺</td><td>&mdash;</td><td>¥85</td></tr>
+    <tr><td>羊卓雍措</td><td>&mdash;</td><td>¥60</td></tr>
+    <tr><td>珠峰大本营</td><td>¥180 + 观光车 ¥120</td><td>¥300</td></tr>
+    <tr><td>佩枯措</td><td>&mdash;</td><td>¥40</td></tr>
+    <tr><td>纳木错</td><td>&mdash;</td><td>¥120</td></tr>
+    <tr class="total"><td>门票合计/人</td><td colspan="2"><strong>¥965</strong></td></tr>
+  </table>
+  <p style="color:var(--muted);font-size:0.82em;margin-top:10px;">* 布宫门票 ¥200 未计入（极难预约）。普莫雍措一般免票。圣象天门可能收取环保费/预约费。氧气去医院获取。住宿、餐饮、交通费用不含在内。</p>
+</div>
+
+<div class="section reminders">
+  <h2>关键提醒</h2>
+  <ul>
+    <li><strong>边防证：</strong>Day4-6 经羊湖/珠峰/佩枯措必须办理。出发前在户籍地派出所或拉萨办理。填写"日喀则地区：定日县、吉隆县、聂拉木县；山南地区：浪卡子县"。拉萨代办约 ¥100-200，当天可取。</li>
+    <li><strong>氧气：</strong>去医院获取，Day5 大本营和 Day7 纳木错/圣象天门是刚需。</li>
+    <li><strong>衣物：</strong>8月白天 20-25&deg;C，夜间大本营 0-5&deg;C。必备：冲锋衣+羽绒服+抓绒+帽子+手套+墨镜+防晒霜（SPF50+，紫外线极强）。</li>
+    <li><strong>高反药：</strong>提前一周吃红景天（心理安慰），备高原安、布洛芬（头痛用）、葡萄糖口服液。</li>
+    <li><strong>证件：</strong>身份证全程随身携带，沿途检查站频繁（每 50-100km 一次）。</li>
+    <li><strong>保险：</strong>建议购买高原户外保险（含 6,000m 海拔），约 ¥50-100。</li>
+    <li><strong>布达拉宫：</strong>门票需提前7天在微信小程序"布达拉宫官方平台"预约，基本秒光。若进不去，广场+药王山观景台拍照也足够。</li>
+    <li><strong>圣象天门：</strong>位于纳木错北岸，需单独预约（关注"圣象天门"公众号或通过旅行社）。路况差，越野车为宜。</li>
+    <li><strong>包车：</strong>拉萨当地越野车约 ¥1,200-1,500/天，找口碑好的藏族司机。Day6-7 超长车程务必提前沟通好价格和时间。</li>
+  </ul>
+</div>
+
+<div class="section">
+  <h2>每日海拔速查表</h2>
+  <table class="cost-table">
+    <tr><td>Day1</td><td>索松村</td><td>3,000m</td><td class="tag info">低海拔适应</td></tr>
+    <tr><td>Day2</td><td>巴松措</td><td>3,500m</td><td class="tag info">适应上升</td></tr>
+    <tr><td>Day3</td><td>拉萨</td><td>3,650m</td><td class="tag info">继续适应</td></tr>
+    <tr><td>Day4</td><td>日喀则</td><td>3,800m</td><td class="tag info">稳步上升（经5,010m）</td></tr>
+    <tr><td>Day5</td><td>珠峰大本营/定日</td><td>5,200m/4,300m</td><td class="tag warn">剧烈爬升！高反高风险</td></tr>
+    <tr><td>Day6</td><td>日喀则</td><td>3,800m</td><td class="tag info">回落休整</td></tr>
+    <tr><td>Day7</td><td>纳木错/圣象天门</td><td>4,718m/4,800m</td><td class="tag warn">再次爬升，当日到拉萨</td></tr>
+    <tr><td>Day8</td><td>拉萨/离境</td><td>3,650m</td><td>&mdash;</td></tr>
+  </table>
+</div>
+
+<div class="footer">
+  <p>本行程仅供内部规划参考，实际时间和费用可能因路况、天气、景区政策调整而变化。8月为西藏雨季，部分路段可能有落石/塌方风险，请关注当地交通公告。祝你旅途愉快！</p>
+</div>
+
+</div>
+<script type="text/javascript">
+window._AMapSecurityConfig = {
+    securityJsCode: "8737710beeb685bfe4d9d5da59385e8f"
+};
+</script>
+<script type="text/javascript" src="https://webapi.amap.com/maps?v=2.0&key=384e0989f393f99e9a26bdb93e6e9546&plugin=AMap.Driving"></script>
+<script>
+
+// ---- SEGMENT DATA (organized by day) ----
+var segData = {
+  1: [{id:'1_0', from:[94.337900,29.298263], to:[94.833338,29.471209], title:'林芝机场 \u2192 索松村', km:63, hr:1.2}],
+  2: [{id:'2_0', from:[94.833338,29.471209], to:[94.061761,30.026146], title:'索松村 \u2192 新措', km:211, hr:3.6},
+      {id:'2_1', from:[94.061761,30.026146], to:[93.947308,30.001747], title:'新措 \u2192 巴松措', km:13, hr:0.8}],
+  3: [{id:'3_0', from:[93.947308,30.001747], to:[91.101116,29.647652], title:'巴松措 \u2192 拉萨', km:358, hr:4.2}],
+  4: [{id:'4_0', from:[91.101116,29.647652], to:[90.398263,29.017059], title:'拉萨 \u2192 羊卓雍措', km:150, hr:2.5},
+      {id:'4_1', from:[90.398263,29.017059], to:[90.529614,28.562520], title:'羊卓雍措 \u2192 普莫雍措', km:71, hr:1.1},
+      {id:'4_2', from:[90.529614,28.562520], to:[88.881973,29.266558], title:'普莫雍措 \u2192 日喀则', km:243, hr:3.9}],
+  5: [{id:'5_0', from:[88.881974,29.266558], to:[86.854267,28.133872], title:'日喀则 \u2192 珠峰大本营', km:366, hr:6.3},
+      {id:'5_1', from:[86.854267,28.133872], to:[87.064633,28.583250], title:'珠峰大本营 \u2192 定日', km:102, hr:2.1}],
+  6: [{id:'6_0', from:[87.064633,28.583250], to:[85.463635,28.846731], title:'定日 \u2192 佩枯措', km:253, hr:4.4},
+      {id:'6_1', from:[85.463635,28.846731], to:[88.881974,29.266558], title:'佩枯措 \u2192 日喀则', km:522, hr:7.6}],
+  7: [{id:'7_0', from:[88.881981,29.266556], to:[91.088810,30.782586], title:'日喀则 \u2192 纳木错', km:372, hr:5.3},
+      {id:'7_1', from:[91.088810,30.782586], to:[90.509917,30.821203], title:'纳木错 \u2192 圣象天门', km:100, hr:2.4},
+      {id:'7_2', from:[90.509917,30.821203], to:[91.101120,29.647698], title:'圣象天门 \u2192 拉萨', km:318, hr:5.3}]
+};
+
+// Color palette for segments within a day (distinct colors)
+var segColors = [
+  {stroke:'#E63946', fill:'#E63946'},  // red
+  {stroke:'#1D3557', fill:'#1D3557'},  // dark blue
+  {stroke:'#2A9D8F', fill:'#2A9D8F'},  // teal
+];
+
+var HIGHLIGHT_COLOR = '#FF6B00';
+var HIGHLIGHT_WIDTH = 6;
+var NORMAL_WIDTH = 4;
+var DIMMED_OPACITY = 0.25;
+
+// Color per segment (hardcoded for variety)
+var segColorMap = {
+  '1_0': {stroke:'#E63946', fill:'#E63946'},
+  '2_0': {stroke:'#E63946', fill:'#E63946'},
+  '2_1': {stroke:'#1D3557', fill:'#1D3557'},
+  '3_0': {stroke:'#E63946', fill:'#E63946'},
+  '4_0': {stroke:'#E63946', fill:'#E63946'},
+  '4_1': {stroke:'#1D3557', fill:'#1D3557'},
+  '4_2': {stroke:'#2A9D8F', fill:'#2A9D8F'},
+  '5_0': {stroke:'#E63946', fill:'#E63946'},
+  '5_1': {stroke:'#1D3557', fill:'#1D3557'},
+  '6_0': {stroke:'#E63946', fill:'#E63946'},
+  '6_1': {stroke:'#1D3557', fill:'#1D3557'},
+  '7_0': {stroke:'#E63946', fill:'#E63946'},
+  '7_1': {stroke:'#1D3557', fill:'#1D3557'},
+  '7_2': {stroke:'#2A9D8F', fill:'#2A9D8F'}
+};
+
+// Global state per day
+var dayMaps = {};
+var dayState = {};
+
+function makeCircleMarker(color) {
+  var d = document.createElement('div');
+  d.style.cssText = 'width:14px;height:14px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.4);';
+  return d;
+}
+
+// Info popup HTML for a segment
+function segInfoHtml(seg) {
+  return '<div style="font-size:13px;line-height:1.7;min-width:160px;">' +
+    '<b style="font-size:14px;">' + seg.title + '</b><br>' +
+    '<span style="color:#666;">距离:</span> <b>' + seg.km + ' km</b><br>' +
+    '<span style="color:#666;">车程:</span> <b>' + seg.hr + ' h</b>' +
+    '</div>';
+}
+
+// ---- Initialize a single day map ----
+function initDayMap(day) {
+  var containerId = 'map-day' + day;
+  var mapDiv = document.getElementById(containerId);
+  if (!mapDiv) { console.warn('No container for day ' + day); return; }
+
+  var map = new AMap.Map(containerId, {
+    zoom: 10,
+    center: [90.5, 30.0],
+    mapStyle: 'amap://styles/light',
+    resizeEnable: true,
+    viewMode: '2D'
+  });
+  dayMaps[day] = map;
+
+  var state = {
+    map: map,
+    polylines: [],      // all polylines
+    markers: [],         // all station markers
+    labels: [],          // all text labels
+    infoWin: null,       // info window
+    selectedId: null     // currently highlighted segment id
+  };
+  dayState[day] = state;
+
+  AMap.plugin('AMap.Driving', function() {
+    var segments = segData[day];
+    if (!segments) return;
+
+    var allBounds = [];
+    var searchIdx = 0;
+
+    function addPolyline(path, seg, isFallback) {
+      var color = segColorMap[seg.id] || {stroke:'#E63946', fill:'#E63946'};
+      var opts = {
+        path: path,
+        strokeColor: color.stroke,
+        strokeWeight: 4,
+        strokeOpacity: 0.75,
+        lineJoin: 'round',
+        lineCap: 'round',
+        zIndex: 10
+      };
+      if (isFallback) opts.strokeStyle = 'dashed';
+
+      var polyline = new AMap.Polyline(opts);
+      map.add(polyline);
+      polyline._segId = seg.id;
+      polyline._segData = seg;
+      polyline._color = color.stroke;
+      if (isFallback) polyline._fallback = true;
+      state.polylines.push(polyline);
+
+      path.forEach(function(p) { allBounds.push(p); });
+
+      polyline.on('click', function(e) {
+        highlightSegment(day, seg.id, e);
+      });
+    }
+
+    function searchNext() {
+      if (searchIdx >= segments.length) {
+        addStationMarkers(day);
+        if (allBounds.length > 0) {
+          map.setFitView(null, false, [60, 40, 60, 40]);
+        }
+        return;
+      }
+
+      var seg = segments[searchIdx];
+      searchIdx++;
+
+      var origin = new AMap.LngLat(seg.from[0], seg.from[1]);
+      var dest = new AMap.LngLat(seg.to[0], seg.to[1]);
+
+      new AMap.Driving({
+        policy: AMap.DrivingPolicy.LEAST_TIME,
+        map: map,
+        hideMarkers: true
+      }).search(origin, dest, function(status, result) {
+        var pathOk = false;
+
+        if (status === 'complete' && result.routes && result.routes.length > 0) {
+          var route = result.routes[0];
+          var steps = route.steps;
+          var fullPath = [];
+          steps.forEach(function(step) {
+            if (step.path) {
+              step.path.forEach(function(p) {
+                fullPath.push([p.lng, p.lat]);
+              });
+            }
+          });
+
+          if (fullPath.length > 0) {
+            pathOk = true;
+            addPolyline(fullPath, seg, false);
+          }
+        }
+
+        if (!pathOk) {
+          addPolyline([seg.from, seg.to], seg, true);
+        }
+
+        searchNext();
+      });
+    }
+
+    searchNext();
+  });
+}
+
+// ---- Add station markers (circles + labels) for a day ----
+function addStationMarkers(day) {
+  var state = dayState[day];
+  if (!state) return;
+  var map = state.map;
+  var segments = segData[day];
+
+  var seen = {};
+  segments.forEach(function(seg) {
+    var color = segColorMap[seg.id] || {stroke:'#E63946', fill:'#E63946'};
+    var parts = seg.title.split(' \u2192 ');
+    var stations = [
+      {pos: seg.from, name: parts[0], color: color.fill},
+      {pos: seg.to, name: parts[1] || parts[0], color: color.fill}
+    ];
+    stations.forEach(function(st) {
+      if (!st.name) return;
+      var key = st.pos[0].toFixed(4) + ',' + st.pos[1].toFixed(4);
+      if (seen[key]) return;
+      seen[key] = true;
+
+      var mk = new AMap.Marker({
+        position: st.pos,
+        content: makeCircleMarker(st.color),
+        offset: new AMap.Pixel(-9, -9),
+        map: map,
+        zIndex: 100,
+        clickable: false
+      });
+      state.markers.push(mk);
+
+      var lb = new AMap.Text({
+        text: st.name,
+        position: st.pos,
+        offset: new AMap.Pixel(0, -22),
+        style: {
+          'font-size': '12px', 'font-weight': '700', 'color': '#2c2c2c',
+          'background': 'rgba(255,255,255,0.85)', 'padding': '2px 6px',
+          'border-radius': '3px', 'white-space': 'nowrap', 'pointer-events': 'none'
+        },
+        map: map,
+        zIndex: 101,
+        clickable: false
+      });
+      state.labels.push(lb);
+    });
+  });
+}
+
+// ---- Highlight a segment on click ----
+function highlightSegment(day, segId, event) {
+  var state = dayState[day];
+  if (!state) return;
+
+  // If clicking the same segment, deselect
+  if (state.selectedId === segId) {
+    resetHighlight(day);
+    return;
+  }
+
+  resetHighlight(day);
+
+  // Find and highlight the selected polyline
+  state.polylines.forEach(function(pl) {
+    if (pl._segId === segId) {
+      pl.setOptions({
+        strokeColor: HIGHLIGHT_COLOR,
+        strokeWeight: 6,
+        strokeOpacity: 1.0,
+        zIndex: 50
+      });
+      state.selectedId = segId;
+
+      // Show info window
+      var seg = pl._segData;
+      if (state.infoWin) {
+        state.infoWin.close();
+      }
+      state.infoWin = new AMap.InfoWindow({
+        content: segInfoHtml(seg),
+        offset: new AMap.Pixel(0, -20),
+        autoMove: true
+      });
+      state.infoWin.open(state.map, event.lnglat);
+
+    } else {
+      // Dim others
+      pl.setOptions({
+        strokeOpacity: DIMMED_OPACITY,
+        zIndex: 5,
+        strokeWeight: pl._fallback ? 3 : 4
+      });
+    }
+  });
+}
+
+// ---- Reset all highlights for a day ----
+function resetHighlight(day) {
+  var state = dayState[day];
+  if (!state) return;
+
+  state.polylines.forEach(function(pl) {
+    var origColor = pl._color || '#E63946';
+    pl.setOptions({
+      strokeColor: origColor,
+      strokeWeight: pl._fallback ? 3 : 4,
+      strokeOpacity: 0.75,
+      zIndex: 10
+    });
+    if (pl._fallback) {
+      pl.setOptions({ strokeStyle: 'dashed' });
+    }
+  });
+
+  if (state.infoWin) {
+    state.infoWin.close();
+  }
+  state.selectedId = null;
+}
+
+// ---- Initialize all maps ----
+document.addEventListener('DOMContentLoaded', function() {
+  // Day 8 has no map content
+  for (var d = 1; d <= 7; d++) {
+    initDayMap(d);
+  }
+
+  // Close info window on map click (if not on a polyline)
+  for (var d = 1; d <= 7; d++) {
+    (function(day) {
+      var map = dayMaps[day];
+      if (!map) return;
+      map.on('click', function(e) {
+        if (e.target && e.target._segId) return; // clicked on polyline
+        resetHighlight(day);
+      });
+    })(d);
+  }
+});
+
+</script>
+</body>
+</html>
